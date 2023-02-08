@@ -1,11 +1,8 @@
-import argparse
-import logging
-import os
 import subprocess
+import datetime
 import time
 from threading import Thread
 
-import cec
 from adb_shell.adb_device import AdbDeviceTcp
 from adb_shell.auth.sign_pythonrsa import PythonRSASigner
 
@@ -35,19 +32,34 @@ class Monitor:
 
         android_tv.close()
 
+    def start_monitor(self):
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+        status = ''
+        while 'connected to' not in status:
+            connect_process = subprocess.Popen(['adb', 'connect', '192.168.1.101:5555'], stdout=subprocess.PIPE)
+            status = connect_process.stdout.readline().decode()
+            time.sleep(1)
+
+        print('Connected to the tv logs')
+
+        adb_logcat_process = subprocess.Popen(['adb', 'logcat', '-T', current_time], stdout=subprocess.PIPE)
+
+        # Read 100 lines at a time
+        BATCH_SIZE = 100
+
+        while True:
+            log_batch = adb_logcat_process.stdout.read(BATCH_SIZE).decode()
+            log_lines = log_batch.strip().split('\n')
+
+            if any("HdmiCecLocalDevice: ---onMessage--fuli---messageOpcode:157" in line for line in log_lines):
+                self.turn_off_tv()
+
+
+
 def main():
     monitor = Monitor()
-
-    import datetime
-
-    current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    subprocess.Popen(['adb', 'connect', '192.168.1.101:5555'])
-    adb_logcat_process = subprocess.Popen(['adb', 'logcat', '-T', current_time], stdout=subprocess.PIPE)
-
-    while True:
-        log_line = adb_logcat_process.stdout.readline().decode().strip()
-        if "HdmiCecLocalDevice: ---onMessage--fuli---messageOpcode:157" in log_line:
-            monitor.turn_off_tv()
+    monitor.start_monitor()
 
 if __name__ == '__main__':
     main()
