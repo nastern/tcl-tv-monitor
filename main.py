@@ -8,7 +8,7 @@ from adb_shell.adb_device import AdbDeviceTcp
 from adb_shell.auth.sign_pythonrsa import PythonRSASigner
 
 current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', filename=f'./logs/logs-{current_time}.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', filename=f'/home/admin/python-cec/logs/logs-{current_time}.log', encoding='utf-8', level=logging.INFO)
 class Monitor:
     def __init__(self) -> None:
         super().__init__()
