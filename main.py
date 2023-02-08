@@ -1,12 +1,14 @@
 import subprocess
 import datetime
 import time
+import logging
 from threading import Thread
 
 from adb_shell.adb_device import AdbDeviceTcp
 from adb_shell.auth.sign_pythonrsa import PythonRSASigner
 
-
+current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', filename=f'./logs/logs-{current_time}.log', encoding='utf-8', level=logging.INFO)
 class Monitor:
     def __init__(self) -> None:
         super().__init__()
@@ -29,7 +31,7 @@ class Monitor:
         # Send a shell command
         tv_off_command_key = '26'
         android_tv.shell('input keyevent %s' % tv_off_command_key)
-
+        logging.info(f'Sending shutdown signal to {self.tv_ip_address}')
         android_tv.close()
 
     def start_monitor(self):
@@ -41,7 +43,7 @@ class Monitor:
             status = connect_process.stdout.readline().decode()
             time.sleep(1)
 
-        print('Connected to the tv logs')
+        logging.info(f'Connected to abd TV logs')
 
         adb_logcat_process = subprocess.Popen(['adb', 'logcat', '-T', current_time], stdout=subprocess.PIPE)
 
@@ -51,8 +53,8 @@ class Monitor:
         while True:
             log_batch = adb_logcat_process.stdout.read(BATCH_SIZE).decode()
             log_lines = log_batch.strip().split('\n')
-
-            if any("HdmiCecLocalDevice: ---onMessage--fuli---messageOpcode:157" in line for line in log_lines):
+            if any("messageOpcode:157" in line for line in log_lines):
+                logging.info(f'Recieved shutdown signal from CEC device')
                 self.turn_off_tv()
 
 
