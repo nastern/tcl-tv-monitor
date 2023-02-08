@@ -45,17 +45,15 @@ class Monitor:
 
         logging.info(f'Connected to abd TV logs')
 
-        adb_logcat_process = subprocess.Popen(['adb', 'logcat', '-T', current_time], stdout=subprocess.PIPE)
-
-        # Read 100 lines at a time
-        BATCH_SIZE = 100
+        adb_logcat_process = subprocess.Popen(['adb', 'logcat', '-T', current_time, '\*:D', '-e', 'messageOpcode:157'], stdout=subprocess.PIPE)
 
         while True:
-            log_batch = adb_logcat_process.stdout.read(BATCH_SIZE).decode()
-            log_lines = log_batch.strip().split('\n')
-            if any("messageOpcode:157" in line for line in log_lines):
+            log_line = adb_logcat_process.stdout.readline().decode()
+            if "messageOpcode:157" in log_line:
                 logging.info(f'Recieved shutdown signal from CEC device')
                 self.turn_off_tv()
+            else:
+                logging.info(f'Recieved a different line : {log_line}')
 
 
 
