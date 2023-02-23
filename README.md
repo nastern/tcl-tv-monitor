@@ -1,5 +1,5 @@
 # tcl-tv-monitor
-A simple application to shut down your TCL tv when it receives a CEC shutdown signal running on a raspberry pi
+TCL TV Monitor is a project for remotely monitoring and controlling TCL smart TVs over the network using Tcl and Python, namely for shutting down the TV with CEC. The project provides a simple remote control interface that allows you to connect to a TCL smart TV, get information about its state, and control it using various commands. 
 
 ## Setup
 1. Clone this repository locally/onto your raspberry pi
